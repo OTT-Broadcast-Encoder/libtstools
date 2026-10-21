@@ -137,6 +137,15 @@ test_smoother_rtp: test_smoother_rtp.c ../src/smoother-rtp.c ../src/rtp-analyzer
 test_segmentwriter: test_segmentwriter.c ../src/segmentwriter.c ../src/kl-queue.c ../src/time.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ test_segmentwriter.c ../src/segmentwriter.c ../src/kl-queue.c ../src/time.c -lpthread
 
+test_segmentwriter_enqueue: test_segmentwriter_enqueue.c ../src/segmentwriter.c ../src/kl-queue.c ../src/time.c
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ test_segmentwriter_enqueue.c ../src/segmentwriter.c ../src/kl-queue.c ../src/time.c -lpthread -Wl,--wrap=klqueue_push -Wl,--wrap=free
+
+.PHONY: test_segmentwriter_ownership
+# GNU ld wrapping makes the consumer run before enqueue returns on Linux.
+test_segmentwriter_ownership: test_segmentwriter_enqueue
+	./test_segmentwriter_enqueue copy
+	./test_segmentwriter_enqueue object
+
 test_klbitstream_readwriter: test_klbitstream_readwriter.c ../src/libltntstools/klbitstream_readwriter.h
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ test_klbitstream_readwriter.c
 
@@ -173,4 +182,5 @@ test_ac3: test_ac3.c ../src/ac3.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ test_ac3.c ../src/ac3.c
 
 clean:
+	rm -f test_segmentwriter_enqueue
 	rm -f test_crc32 test_history_metric test_ts test_reframer test_stats test_descriptor test_pes test_pat test_sectionextractor test_ts_packetizer test_throughput_hires test_time test_throughput test_streammodel test_streammodel_extractors test_pes_extractor test_sei_timestamp test_smoother_pcr test_probes test_smoother_rtp test_segmentwriter test_klbitstream_readwriter test_tr101290 test_nal_bitreader test_nal_h264 test_nal_h265 test_udp_receiver test_xorg_list test_vbv test_proc_net_udp test_klringbuffer test_ac3
