@@ -365,6 +365,7 @@ ssize_t ltntstools_segmentwriter_write(void *hdl, const uint8_t *buf, size_t len
 	if (!qi) {
 		return 0;
 	}
+	len = qi->lengthBytes;
 	time(&qi->datetime);
 	klqueue_push(&s->q, qi);
 #else
