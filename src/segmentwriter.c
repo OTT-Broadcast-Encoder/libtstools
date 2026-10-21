@@ -364,10 +364,12 @@ int ltntstools_segmentwriter_object_write(void *hdl, void *object)
 	struct ltntstools_segmentwriter_s *s = (struct ltntstools_segmentwriter_s *)hdl;
 
 	struct q_item_s *qi = (struct q_item_s *)object;
+	/* The writer owns and may free qi as soon as it is queued. */
+	int len = qi->lengthBytes;
 	time(&qi->datetime);
 	klqueue_push(&s->q, qi);
 
-	return qi->lengthBytes;
+	return len;
 
 #if USE_QUEUE_NOT_RING
 #else
@@ -384,12 +386,10 @@ ssize_t ltntstools_segmentwriter_write(void *hdl, const uint8_t *buf, size_t len
 	if (!qi) {
 		return 0;
 	}
+	/* Capture the result before transferring ownership to the writer. */
+	ssize_t len = qi->lengthBytes;
 	time(&qi->datetime);
 	klqueue_push(&s->q, qi);
-	/* Number of bytes queued -- this used to be left at 0 (its
-	 * initializer) in this code path, contradicting the documented
-	 * "return number of bytes queued" contract. */
-	ssize_t len = qi->lengthBytes;
 #else
 	pthread_mutex_lock(&s->mutex);
 	int didOverflow;
