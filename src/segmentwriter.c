@@ -120,10 +120,15 @@ static size_t _write(struct ltntstools_segmentwriter_s *s)
 				free(s->filename);
 				s->filename = NULL;
 			}
-			char ts[64];
-			libltntstools_getTimestamp(&ts[0], sizeof(ts), NULL);
-			s->filename = realloc(s->filename, 512);
-			sprintf(s->filename, "%s-%s%s", s->filenamePrefix, ts, s->filenameSuffix);
+			/* An explicit empty suffix requests the literal single-file path. */
+			if (!s->filenameSuffix[0]) {
+				s->filename = strdup(s->filenamePrefix);
+			} else {
+				char ts[64];
+				libltntstools_getTimestamp(&ts[0], sizeof(ts), NULL);
+				s->filename = realloc(s->filename, 512);
+				sprintf(s->filename, "%s-%s%s", s->filenamePrefix, ts, s->filenameSuffix);
+			}
 		}
 	} else
 	if (s->writeMode == 1) {
